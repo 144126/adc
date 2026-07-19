@@ -37,6 +37,7 @@ export const actions: Actions = {
 		const id = await uuid_from(g);
 		const existing = await retrieve_one(env, id);
 		const ep = (existing?.payload ?? {}) as Record<string, unknown>;
+		if (existing && ep.e !== locals.user.e) return fail(409, { n: 'name already taken' });
 
 		const l = (() => {
 			try {

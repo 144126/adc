@@ -25,9 +25,19 @@ export const actions: Actions = {
 		const b = { n: v('y'), e: v('e'), p: v('p'), l: v('i'), c: v('v') };
 		const metrics = { d: v('d'), q: v('q'), m: v('m'), a: v('a'), z: v('z'), k: v('k') };
 
+		const u = v('u');
+		const l = (() => {
+			try {
+				return new URL(u).hostname;
+			} catch {
+				return u;
+			}
+		})();
+
 		const payload = {
 			...ep,
-			u: v('u'),
+			u,
+			l,
 			o: v('o'),
 			w: v('w'),
 			h: v('h'),
