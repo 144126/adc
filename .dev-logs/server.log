@@ -1,0 +1,11 @@
+
+> adc@0.0.1 dev /home/ed/i/adc
+> vite dev
+
+3:00:38 AM [vite] (client) Forced re-optimization of dependencies
+
+  VITE v8.1.5  ready in 3567 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+  ➜  press h + enter to show help

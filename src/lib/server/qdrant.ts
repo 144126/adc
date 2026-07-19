@@ -69,7 +69,5 @@ export async function upsert(
 	points: { id: string; payload: Record<string, unknown> }[]
 ): Promise<void> {
 	if (!points.length) return;
-	await (await qc(env))
-		.upsert(C, { points: points.map((p) => ({ ...p, vector: ZV })) })
-		.catch(() => {});
+	await (await qc(env)).upsert(C, { points: points.map((p) => ({ ...p, vector: ZV })) });
 }
