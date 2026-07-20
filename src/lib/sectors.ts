@@ -39,7 +39,13 @@ export const sector_info: Record<string, { n: string; i: string }> = {
 	}
 };
 
-export const status_label: Record<string, string> = { l: 'live', p: 'preview', u: 'unverified' };
+export const status_label: Record<string, string> = { l: 'live', p: 'preview', u: 'in review' };
+
+export const status_legend: Record<string, string> = {
+	l: 'verified working product',
+	p: 'usable, still maturing',
+	u: 'newly submitted, not yet checked'
+};
 
 export const sector_color: Record<string, string> = {
 	f: 'bg-coral',

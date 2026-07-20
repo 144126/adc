@@ -1,19 +1,24 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import { page } from '$app/state';
 	import { sector_info } from '$lib/sectors';
+	import { fmt_date, fmt_num } from '$lib/fmt';
 	import StatusPill from '$lib/status_pill.svelte';
 
 	let { data }: { data: PageData } = $props();
 	const p = $derived(data.p as Record<string, string> & { b?: Record<string, string> });
 	const b = $derived(p.b ?? {});
+	const is_owner = $derived(!!data.u && data.u.e === p.e);
+
+	let show_preview = $state(false);
 
 	const revenue_line = $derived(
-		p.m === 'y' ? (p.a ? `yes, ${p.a}` : 'yes') : p.m === 'n' ? 'no' : ''
+		p.m === 'y' ? (p.a ? `yes, ₦${fmt_num(p.a)} / month` : 'yes') : p.m === 'n' ? 'no' : ''
 	);
 	const metrics = $derived(
 		[
-			{ k: 'launched', v: p.d },
-			{ k: 'users / signups / downloads', v: p.q },
+			{ k: 'launched', v: fmt_date(p.d) },
+			{ k: 'users / signups / downloads', v: fmt_num(p.q) },
 			{ k: 'revenue', v: revenue_line },
 			{ k: 'team size', v: p.z },
 			{ k: 'proudest metric', v: p.k }
@@ -29,13 +34,34 @@
 			{ k: 'location', v: b.c }
 		].filter((c) => c.v)
 	);
+
+	const detail = $derived(p.w && p.w !== p.o ? p.w : '');
+	const has_analysis = $derived(!!(detail || p.h || p.x));
 </script>
 
+<svelte:head>
+	<title>{p.n} — devcircles</title>
+	<meta name="description" content={p.o} />
+	<meta property="og:title" content={p.n} />
+	<meta property="og:description" content={p.o} />
+</svelte:head>
+
 <div class="mx-auto max-w-5xl px-6 py-16">
-	<div class="flex flex-wrap items-center gap-3">
+	<a href="/#s-{p.c}" class="text-sm text-ink/60 hover:text-cobalt hover:underline">← all products</a>
+
+	{#if page.url.searchParams.has('submitted')}
+		<div class="mt-6 rounded-lg bg-teal-brand/10 p-4 text-sm text-ink">
+			submitted. your page starts in "{sector_info[p.c]?.n}" with an "in review" badge — the
+			devcircles team reviews new entries and marks working products as live. edit anytime below.
+		</div>
+	{:else if page.url.searchParams.has('saved')}
+		<div class="mt-6 rounded-lg bg-teal-brand/10 p-4 text-sm text-ink">changes saved.</div>
+	{/if}
+
+	<div class="mt-6 flex flex-wrap items-center gap-3">
 		<span class="text-xs tracking-wide text-cobalt uppercase">{sector_info[p.c]?.n}</span>
 		<StatusPill r={p.r} />
-		{#if data.u && data.u.e === p.e}
+		{#if is_owner}
 			<a href="/{p.g}/edit" class="ml-auto text-sm text-cobalt hover:underline">edit your page</a>
 		{/if}
 	</div>
@@ -50,20 +76,28 @@
 
 	<p class="mt-8 max-w-3xl text-2xl leading-snug font-medium text-ink">{p.o}</p>
 
-	<div class="mt-12 grid gap-10 sm:grid-cols-3">
-		<div>
-			<h2 class="text-sm font-semibold tracking-wide text-cobalt uppercase">what it does</h2>
-			<p class="mt-2 text-ink/75">{p.w}</p>
+	{#if has_analysis}
+		<div class="mt-12 grid gap-10 sm:grid-cols-3">
+			{#if detail}
+				<div>
+					<h2 class="text-sm font-semibold tracking-wide text-cobalt uppercase">what it does</h2>
+					<p class="mt-2 text-ink/75">{detail}</p>
+				</div>
+			{/if}
+			{#if p.h}
+				<div>
+					<h2 class="text-sm font-semibold tracking-wide text-cobalt uppercase">why it matters</h2>
+					<p class="mt-2 text-ink/75">{p.h}</p>
+				</div>
+			{/if}
+			{#if p.x}
+				<div>
+					<h2 class="text-sm font-semibold tracking-wide text-cobalt uppercase">where it can grow</h2>
+					<p class="mt-2 text-ink/75">{p.x}</p>
+				</div>
+			{/if}
 		</div>
-		<div>
-			<h2 class="text-sm font-semibold tracking-wide text-cobalt uppercase">why it matters</h2>
-			<p class="mt-2 text-ink/75">{p.h || 'not yet described.'}</p>
-		</div>
-		<div>
-			<h2 class="text-sm font-semibold tracking-wide text-cobalt uppercase">where it can grow</h2>
-			<p class="mt-2 text-ink/75">{p.x || 'not yet described.'}</p>
-		</div>
-	</div>
+	{/if}
 
 	<div class="mt-14 rounded-lg border border-ink/10 p-6">
 		<h2 class="font-display text-lg font-medium text-ink">metrics</h2>
@@ -76,13 +110,13 @@
 					</div>
 				{/each}
 			</dl>
-			<p class="mt-4 text-xs text-ink/40">figures provided by the builder</p>
-		{:else}
+			<p class="mt-4 text-xs text-ink/60">figures provided by the builder</p>
+		{:else if is_owner}
 			<p class="mt-2 text-ink/60">
-				no metrics submitted yet. <a href="/submit" class="text-cobalt hover:underline"
-					>add them</a
-				>
+				no metrics added yet. <a href="/{p.g}/edit" class="text-cobalt hover:underline">add them</a>
 			</p>
+		{:else}
+			<p class="mt-2 text-ink/60">no metrics shared yet.</p>
 		{/if}
 	</div>
 
@@ -110,20 +144,38 @@
 
 	{#if p.u}
 		<div class="mt-14">
-			<div class="aspect-16/10 w-full overflow-hidden rounded-lg border border-ink/10">
-				<iframe src={p.u} title={p.n} loading="lazy" class="h-full w-full"></iframe>
+			<div class="flex flex-wrap items-center justify-between gap-3">
+				<h2 class="font-display text-lg font-medium text-ink">visit the product</h2>
+				<div class="flex items-center gap-3">
+					<button
+						type="button"
+						onclick={() => (show_preview = !show_preview)}
+						class="text-sm text-cobalt hover:underline"
+					>
+						{show_preview ? 'hide preview' : 'preview inline'}
+					</button>
+					<a
+						href={p.u}
+						target="_blank"
+						rel="noopener"
+						class="rounded-full bg-cobalt px-4 py-2 text-sm text-white hover:bg-cobalt/90"
+					>
+						open {p.l || 'site'} ↗
+					</a>
+				</div>
 			</div>
-			<div class="mt-3 flex items-center justify-between text-sm text-ink/50">
-				<span>some sites refuse embedding</span>
-				<a
-					href={p.u}
-					target="_blank"
-					rel="noopener"
-					class="rounded-full bg-cobalt px-4 py-2 text-white hover:bg-cobalt/90"
-				>
-					open site
-				</a>
-			</div>
+			{#if show_preview}
+				<div class="mt-4 aspect-16/10 w-full overflow-hidden rounded-lg border border-ink/10">
+					<iframe
+						src={p.u}
+						title={p.n}
+						loading="lazy"
+						sandbox="allow-scripts allow-forms allow-popups"
+						class="h-full w-full"
+					></iframe>
+				</div>
+				<p class="mt-3 text-sm text-ink/60">blank box? some sites block embedding — use "open" above.</p>
+			{/if}
 		</div>
 	{/if}
 </div>

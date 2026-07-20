@@ -30,6 +30,11 @@ export const GET: RequestHandler = async ({ url, cookies, locals }) => {
 	const state = url.searchParams.get('state');
 	console.log('[GOOGLE] params', { has_code: !!code, state });
 
+	const next = url.searchParams.get('next');
+	if (!code && next && /^\/[a-z0-9\-/]*$/.test(next)) {
+		cookies.set('oauth_next', next, { path: '/', httpOnly: true, maxAge: 600, sameSite: 'lax' });
+	}
+
 	if (code) {
 		const stored_state = cookies.get('oauth_state') ?? null;
 		const stored_verifier = cookies.get('oauth_verifier') ?? null;
@@ -68,8 +73,10 @@ export const GET: RequestHandler = async ({ url, cookies, locals }) => {
 		cookies.set('session', session, { path: '/', httpOnly: true, maxAge: 604800, sameSite: 'lax' });
 		cookies.delete('oauth_state', { path: '/' });
 		cookies.delete('oauth_verifier', { path: '/' });
-		console.log('[GOOGLE] session set, redirecting to /');
-		throw redirect(302, '/');
+		const dest = cookies.get('oauth_next') ?? '/';
+		cookies.delete('oauth_next', { path: '/' });
+		console.log('[GOOGLE] session set, redirecting to', { dest });
+		throw redirect(302, dest);
 	}
 
 	const s = generateState();

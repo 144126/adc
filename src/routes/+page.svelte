@@ -41,15 +41,15 @@
 </script>
 
 <svelte:head>
-	<title>devcircles — products built by the abuja developer community</title>
+	<title>devcircles — products built by the devcircles community</title>
 	<meta
 		name="description"
-		content="a guided tour of the products, platforms, and companies made by members of the abuja devcircles community — with self-reported traction, in plain language."
+		content="a guided tour of the products, platforms, and companies made by members of the devcircles community — with self-reported traction, in plain language."
 	/>
-	<meta property="og:title" content="devcircles — products built in abuja" />
+	<meta property="og:title" content="devcircles — products built by the community" />
 	<meta
 		property="og:description"
-		content="a guided tour of the products, platforms, and companies made by members of the abuja devcircles community."
+		content="a guided tour of the products, platforms, and companies made by members of the devcircles community."
 	/>
 </svelte:head>
 
@@ -74,8 +74,8 @@
 			</h1>
 		</div>
 		<p class="mt-6 max-w-2xl text-lg leading-relaxed text-ink/70">
-			a guided tour of the products, platforms, and companies made by members of the abuja
-			devcircles community. written in plain language, for investors and for everyone else.
+			a guided tour of the products, platforms, and companies made by members of the devcircles
+			community. written in plain language, for investors and for everyone else.
 		</p>
 	</div>
 </section>
@@ -202,8 +202,8 @@
 		<h2 class="font-display text-2xl font-semibold text-ink">about this report</h2>
 		<div class="mt-6 flex flex-col gap-4 text-ink/70">
 			<p>
-				devcircles is a developer community in abuja. this page is a running directory of what
-				members have built, kept up to date by the people building it.
+				devcircles is a developer community. this page is a running directory of what members
+				have built, kept up to date by the people building it.
 			</p>
 			<p>
 				every entry is submitted by its own builder. new entries start in "in review"; the

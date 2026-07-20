@@ -1,7 +1,8 @@
 import type { Actions, PageServerLoad } from './$types';
 import { error, redirect } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
-import { retrieve_one, upsert, uuid_from } from '$lib/server/qdrant';
+import { retrieve_one, upsert, remove, uuid_from } from '$lib/server/qdrant';
+import { sector_order } from '$lib/sectors';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const pt = await retrieve_one(env, await uuid_from(params.slug));
@@ -11,19 +12,30 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	return { p };
 };
 
-export const actions: Actions = {
-	default: async ({ request, params, locals }) => {
-		const id = await uuid_from(params.slug);
-		const pt = await retrieve_one(env, id);
-		if (!pt || !pt.payload) throw error(404, 'not found');
-		const ep = pt.payload as Record<string, unknown>;
-		if (!locals.user || locals.user.e !== ep.e) throw error(403, 'not owner');
+async function load_owned(params: { slug: string }, locals: App.Locals) {
+	const id = await uuid_from(params.slug);
+	const pt = await retrieve_one(env, id);
+	if (!pt || !pt.payload) throw error(404, 'not found');
+	const ep = pt.payload as Record<string, unknown>;
+	if (!locals.user || locals.user.e !== ep.e) throw error(403, 'not owner');
+	return { id, ep };
+}
 
+export const actions: Actions = {
+	save: async ({ request, params, locals }) => {
+		const { id, ep } = await load_owned(params, locals);
 		const fd = await request.formData();
 		const v = (k: string) => ((fd.get(k) as string) ?? '').trim();
 
-		const b = { n: v('y'), e: v('e'), p: v('p'), l: v('i'), c: v('v') };
+		const b = {
+			n: v('y'),
+			e: fd.get('pe') ? v('e') : '',
+			p: v('p'),
+			l: v('i'),
+			c: v('v')
+		};
 		const metrics = { d: v('d'), q: v('q'), m: v('m'), a: v('a'), z: v('z'), k: v('k') };
+		const c = sector_order.includes(v('c') as (typeof sector_order)[number]) ? v('c') : (ep.c as string);
 
 		const u = v('u');
 		const l = (() => {
@@ -38,6 +50,7 @@ export const actions: Actions = {
 			...ep,
 			u,
 			l,
+			c,
 			o: v('o'),
 			w: v('w'),
 			h: v('h'),
@@ -47,6 +60,14 @@ export const actions: Actions = {
 		};
 
 		await upsert(env, [{ id, payload }]);
-		throw redirect(303, '/' + params.slug);
+		throw redirect(303, '/' + params.slug + '?saved=1');
+	},
+
+	del: async ({ request, params, locals }) => {
+		const { id } = await load_owned(params, locals);
+		const fd = await request.formData();
+		if (fd.get('confirm') !== 'on') throw error(400, 'confirm required');
+		await remove(env, id);
+		throw redirect(303, '/');
 	}
 };

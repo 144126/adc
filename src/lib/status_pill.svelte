@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { status_label } from '$lib/sectors';
+	import { status_label, status_legend } from '$lib/sectors';
 	let { r }: { r: string } = $props();
 	const cls: Record<string, string> = {
 		l: 'bg-teal-brand text-white',
@@ -9,9 +9,10 @@
 </script>
 
 <span
+	title={status_legend[r] ?? status_legend.u}
 	class="inline-flex items-center leading-none rounded-full px-2.5 py-1 text-[10px] font-medium tracking-wide uppercase {cls[
 		r
 	] ?? cls.u}"
 >
-	{status_label[r] ?? 'unverified'}
+	{status_label[r] ?? 'in review'}
 </span>

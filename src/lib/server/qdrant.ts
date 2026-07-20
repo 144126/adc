@@ -67,9 +67,12 @@ export async function scroll(
 	filter: ReturnType<typeof f>,
 	limit = 1000
 ): Promise<Pt[]> {
-	const r = await (await qc(env))
-		.scroll(C, { filter, limit, with_payload: true, with_vector: false })
-		.catch(() => ({ points: [] as Pt[] }));
+	const r = await (await qc(env)).scroll(C, {
+		filter,
+		limit,
+		with_payload: true,
+		with_vector: false
+	});
 	return r.points as Pt[];
 }
 
@@ -84,4 +87,8 @@ export async function upsert(
 ): Promise<void> {
 	if (!points.length) return;
 	await (await qc(env)).upsert(C, { points: points.map((p) => ({ ...p, vector: ZV })) });
+}
+
+export async function remove(env: QEnv, id: string): Promise<void> {
+	await (await qc(env)).delete(C, { points: [id] });
 }

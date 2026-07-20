@@ -2,6 +2,7 @@ import type { Actions, PageServerLoad } from './$types';
 import { error, fail, redirect } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
 import { retrieve_one, upsert, uuid_from } from '$lib/server/qdrant';
+import { sector_order } from '$lib/sectors';
 
 const slugify = (s: string) =>
 	s
@@ -10,7 +11,8 @@ const slugify = (s: string) =>
 		.replace(/^-+|-+$/g, '');
 
 export const load: PageServerLoad = async ({ locals }) => {
-	if (!locals.user) throw redirect(302, '/google');
+	if (!locals.user) throw redirect(302, '/google?next=/submit');
+	return { u: locals.user };
 };
 
 export const actions: Actions = {
@@ -18,26 +20,24 @@ export const actions: Actions = {
 		if (!locals.user) throw error(401, 'auth');
 		const fd = await request.formData();
 		const v = (k: string) => ((fd.get(k) as string) ?? '').trim();
+		const values = Object.fromEntries(fd) as Record<string, string>;
 
-		const y = v('y');
-		const e = v('e');
 		const n = v('n');
 		const u = v('u');
 		const o = v('o');
 
 		const errs: Record<string, string> = {};
-		if (!y) errs.y = 'required';
-		if (!e) errs.e = 'required';
 		if (!n) errs.n = 'required';
 		if (!u) errs.u = 'required';
 		if (!o) errs.o = 'required';
-		if (Object.keys(errs).length) return fail(400, errs);
+		if (Object.keys(errs).length) return fail(400, { errs, values });
 
 		const g = slugify(n);
 		const id = await uuid_from(g);
 		const existing = await retrieve_one(env, id);
 		const ep = (existing?.payload ?? {}) as Record<string, unknown>;
-		if (existing && ep.e !== locals.user.e) return fail(409, { n: 'name already taken' });
+		if (existing && ep.e !== locals.user.e)
+			return fail(409, { errs: { n: 'name already taken' }, values });
 
 		const l = (() => {
 			try {
@@ -47,11 +47,12 @@ export const actions: Actions = {
 			}
 		})();
 
-		const b = { n: y, e, p: v('p'), l: v('i'), c: v('v') };
+		const c = sector_order.includes(v('c') as (typeof sector_order)[number]) ? v('c') : 'y';
+		const b = { n: v('y'), e: fd.get('pe') ? locals.user.e : '', p: '', l: '', c: v('v') };
 		const metrics = { d: v('d'), q: v('q'), m: v('m'), a: v('a'), z: v('z'), k: v('k') };
 
 		const payload = existing
-			? { ...ep, u, l, b, ...metrics }
+			? { ...ep, u, l, c, b, ...metrics }
 			: {
 					s: 'adca',
 					t: 'p',
@@ -60,10 +61,10 @@ export const actions: Actions = {
 					u,
 					l,
 					r: 'u',
-					c: 'y',
+					c,
 					e: locals.user.e,
 					o,
-					w: o,
+					w: '',
 					h: '',
 					x: '',
 					b,
@@ -72,6 +73,6 @@ export const actions: Actions = {
 				};
 
 		await upsert(env, [{ id, payload }]);
-		throw redirect(303, '/' + g);
+		throw redirect(303, '/' + g + '?submitted=1');
 	}
 };

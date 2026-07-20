@@ -7,8 +7,10 @@
 <svelte:head>
 	<link rel="icon" href={favicon} />
 	<link rel="apple-touch-icon" href={favicon} />
-	<meta property="og:image" content={'https://devcircles.apexlinks.org' + favicon} />
-	<meta name="twitter:card" content="summary" />
+	<meta property="og:site_name" content="devcircles" />
+	<meta property="og:type" content="website" />
+	<meta property="og:image" content="https://devcircles.apexlinks.org/og.png" />
+	<meta name="twitter:card" content="summary_large_image" />
 </svelte:head>
 
 <div class="flex min-h-screen flex-col bg-white text-ink">
@@ -21,12 +23,12 @@
 			<div class="flex items-center gap-4 text-sm">
 				<a href="/submit" class="text-cobalt hover:underline">submit</a>
 				{#if data.u}
-					<span class="text-ink/50">{data.u.e}</span>
+					<span class="max-sm:hidden text-ink/60">{data.u.e}</span>
 					<form method="POST" action="/logout">
 						<button type="submit" class="text-cobalt hover:underline">sign out</button>
 					</form>
 				{:else}
-					<a href="/google" data-sveltekit-reload class="text-cobalt hover:underline">sign in</a>
+					<a href="/google" data-sveltekit-reload class="text-cobalt hover:underline">sign in with google</a>
 				{/if}
 			</div>
 		</nav>
@@ -37,9 +39,13 @@
 	</main>
 
 	<footer class="border-t border-ink/10">
-		<div class="mx-auto flex max-w-5xl items-center gap-2 px-6 py-8 text-sm text-ink/50">
-			<img src={favicon} alt="" class="h-5 w-5 opacity-60" />
-			devcircles community · abuja · july 2026
+		<div class="mx-auto flex max-w-5xl flex-wrap items-center gap-x-6 gap-y-2 px-6 py-8 text-sm text-ink/60">
+			<span class="flex items-center gap-2">
+				<img src={favicon} alt="" class="h-5 w-5 opacity-60" />
+				devcircles community · {new Date().getFullYear()}
+			</span>
+			<a href="/#about" class="hover:underline">about</a>
+			<a href="/submit" class="hover:underline">submit</a>
 		</div>
 	</footer>
 </div>
