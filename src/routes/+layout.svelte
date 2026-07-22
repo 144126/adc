@@ -46,6 +46,8 @@
 			</span>
 			<a href="/#about" class="hover:underline">about</a>
 			<a href="/submit" class="hover:underline">submit</a>
+			<a href="https://www.linkedin.com/company/devcircles" target="_blank" rel="noopener noreferrer" class="hover:underline">linkedin</a>
+			<a href="https://www.instagram.com/dev_circles/" target="_blank" rel="noopener noreferrer" class="hover:underline">instagram</a>
 		</div>
 	</footer>
 </div>

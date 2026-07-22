@@ -2,13 +2,7 @@ import type { Actions, PageServerLoad } from './$types';
 import { error, fail, redirect } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
 import { retrieve_one, upsert, uuid_from } from '$lib/server/qdrant';
-import { sector_order } from '$lib/sectors';
-
-const slugify = (s: string) =>
-	s
-		.toLowerCase()
-		.replace(/[^a-z0-9]+/g, '-')
-		.replace(/^-+|-+$/g, '');
+import { list_sectors, slugify } from '$lib/server/sectors';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) throw redirect(302, '/google?next=/submit');
@@ -47,12 +41,15 @@ export const actions: Actions = {
 			}
 		})();
 
-		const c = sector_order.includes(v('c') as (typeof sector_order)[number]) ? v('c') : 'y';
+		const sectors = await list_sectors(env);
+		const chosen = sectors.find((s) => s.g === v('c'));
+		const c = chosen?.g ?? 'y';
+		const cn = chosen?.n ?? sectors.find((s) => s.g === 'y')?.n ?? 'early & in preview';
 		const b = { n: v('y'), e: fd.get('pe') ? locals.user.e : '', p: '', l: '', c: v('v') };
 		const metrics = { d: v('d'), q: v('q'), m: v('m'), a: v('a'), z: v('z'), k: v('k') };
 
 		const payload = existing
-			? { ...ep, u, l, c, b, ...metrics }
+			? { ...ep, u, l, c, cn, b, ...metrics }
 			: {
 					s: 'adca',
 					t: 'p',
@@ -62,11 +59,12 @@ export const actions: Actions = {
 					l,
 					r: 'u',
 					c,
+					cn,
 					e: locals.user.e,
 					o,
-					w: '',
-					h: '',
-					x: '',
+					w: v('w'),
+					h: v('h'),
+					x: v('x'),
 					b,
 					...metrics,
 					j: Math.floor(Date.now() / 1000)

@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { enhance } from '$app/forms';
-	import { sector_order, sector_info } from '$lib/sectors';
+	import SectorPicker from '$lib/sector_picker.svelte';
+	import { sector_info } from '$lib/sectors';
 	let { data }: { data: PageData } = $props();
 	const p = $derived(data.p as Record<string, string> & { b?: Record<string, string> });
 	const b = $derived(p.b ?? {});
@@ -19,14 +20,7 @@
 	<form method="POST" action="?/save" use:enhance class="mt-10 flex flex-col gap-8">
 		<div class="flex flex-col gap-4">
 			<h2 class="text-sm font-semibold tracking-wide text-cobalt uppercase">about the product</h2>
-			<label class="flex flex-col gap-1 text-sm text-ink/70">
-				sector
-				<select name="c" value={p.c} class="rounded-md border border-ink/20 px-3 py-2">
-					{#each sector_order as s}
-						<option value={s}>{sector_info[s].n}</option>
-					{/each}
-				</select>
-			</label>
+			<SectorPicker name="c" value={p.c} label={p.cn ?? sector_info[p.c]?.n ?? ''} />
 			<label class="flex flex-col gap-1 text-sm text-ink/70">
 				product link
 				<input name="u" type="url" value={p.u} class="rounded-md border border-ink/20 px-3 py-2" />

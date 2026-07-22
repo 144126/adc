@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { ActionData, PageData } from './$types';
 	import { enhance } from '$app/forms';
-	import { sector_order, sector_info } from '$lib/sectors';
+	import SectorPicker from '$lib/sector_picker.svelte';
 	let { form, data }: { form: ActionData; data: PageData } = $props();
 	const err = (k: string) => (form as { errs?: Record<string, string> } | null)?.errs?.[k];
 	const val = (k: string) => (form as { values?: Record<string, string> } | null)?.values?.[k] ?? '';
@@ -59,16 +59,7 @@
 				<input name="n" required value={val('n')} class="rounded-md border border-ink/20 px-3 py-2" />
 				{#if err('n')}<span class="text-xs text-coral">{err('n')}</span>{/if}
 			</label>
-			<label class="flex flex-col gap-1 text-sm text-ink/70">
-				sector*
-				<select name="c" required class="rounded-md border border-ink/20 px-3 py-2">
-					<option value="" selected={!val('c')}>choose a sector</option>
-					{#each sector_order.filter((s) => s !== 'y') as s}
-						<option value={s} selected={val('c') === s}>{sector_info[s].n}</option>
-					{/each}
-					<option value="y" selected={val('c') === 'y'}>not sure yet</option>
-				</select>
-			</label>
+			<SectorPicker name="c" value={val('c')} label={val('cn')} />
 			<label class="flex flex-col gap-1 text-sm text-ink/70">
 				product link*
 				<input
@@ -92,6 +83,18 @@
 				what it does (more detail, optional)
 				<textarea name="w" rows="3" class="rounded-md border border-ink/20 px-3 py-2"
 					>{val('w')}</textarea
+				>
+			</label>
+			<label class="flex flex-col gap-1 text-sm text-ink/70">
+				why it matters (optional)
+				<textarea name="h" rows="3" class="rounded-md border border-ink/20 px-3 py-2"
+					>{val('h')}</textarea
+				>
+			</label>
+			<label class="flex flex-col gap-1 text-sm text-ink/70">
+				where it can grow (optional)
+				<textarea name="x" rows="3" class="rounded-md border border-ink/20 px-3 py-2"
+					>{val('x')}</textarea
 				>
 			</label>
 		</div>

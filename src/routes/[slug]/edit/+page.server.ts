@@ -2,7 +2,7 @@ import type { Actions, PageServerLoad } from './$types';
 import { error, redirect } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
 import { retrieve_one, upsert, remove, uuid_from } from '$lib/server/qdrant';
-import { sector_order } from '$lib/sectors';
+import { list_sectors } from '$lib/server/sectors';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const pt = await retrieve_one(env, await uuid_from(params.slug));
@@ -35,7 +35,10 @@ export const actions: Actions = {
 			c: v('v')
 		};
 		const metrics = { d: v('d'), q: v('q'), m: v('m'), a: v('a'), z: v('z'), k: v('k') };
-		const c = sector_order.includes(v('c') as (typeof sector_order)[number]) ? v('c') : (ep.c as string);
+		const sectors = await list_sectors(env);
+		const chosen_sector = sectors.find((s) => s.g === v('c'));
+		const c = chosen_sector?.g ?? (ep.c as string);
+		const cn = chosen_sector?.n ?? (ep.cn as string);
 
 		const u = v('u');
 		const l = (() => {
@@ -51,6 +54,7 @@ export const actions: Actions = {
 			u,
 			l,
 			c,
+			cn,
 			o: v('o'),
 			w: v('w'),
 			h: v('h'),

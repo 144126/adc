@@ -3,12 +3,12 @@
 	import favicon from '$lib/assets/favicon.png';
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
-	import { sector_order, sector_info, sector_color, status_legend } from '$lib/sectors';
+	import { sector_color, status_legend } from '$lib/sectors';
 	import { fmt_date, fmt_num } from '$lib/fmt';
 	import StatusPill from '$lib/status_pill.svelte';
 
 	let { data }: { data: PageData } = $props();
-	let open = $state(Object.fromEntries(sector_order.map((c) => [c, true])));
+	let open = $state<Record<string, boolean>>({});
 
 	let qy = $state('');
 	let live_only = $state(false);
@@ -26,16 +26,16 @@
 	const total = $derived(data.p.length);
 	const live = $derived(data.p.filter((x) => x.r === 'l').length);
 	const groups = $derived(
-		sector_order
-			.map((c) => ({
-				c,
-				items: filtered
+		[...new Set(filtered.map((x) => x.c))]
+			.map((c) => {
+				const items = filtered
 					.filter((x) => x.c === c)
 					.sort(
 						(a, b) => (status_rank[a.r] ?? 3) - (status_rank[b.r] ?? 3) || a.n.localeCompare(b.n)
-					)
-			}))
-			.filter((g) => g.items.length)
+					);
+				return { c, n: items[0]?.cn || c, items };
+			})
+			.sort((a, b) => a.n.localeCompare(b.n))
 	);
 	const is_filtering = $derived(qy !== '' || live_only);
 </script>
@@ -142,19 +142,19 @@
 				<div id="s-{g.c}">
 					<button
 						type="button"
-						aria-expanded={open[g.c]}
-						onclick={() => (open[g.c] = !open[g.c])}
+						aria-expanded={open[g.c] ?? true}
+						onclick={() => (open[g.c] = !(open[g.c] ?? true))}
 						class="flex w-full items-center gap-3 bg-cobalt px-5 py-3 text-left text-white"
 					>
-						<span class="h-2.5 w-2.5 rounded-full {sector_color[g.c]}"></span>
+						<span class="h-2.5 w-2.5 rounded-full {sector_color[g.c] ?? 'bg-white/60'}"></span>
 						<h2 class="font-display text-lg font-medium tracking-tight">
-							{sector_info[g.c].n}
+							{g.n}
 						</h2>
 						<span class="ml-auto text-sm text-white/70">{g.items.length}</span>
 						<svg
 							viewBox="0 0 20 20"
 							fill="none"
-							class="h-4 w-4 shrink-0 transition-transform duration-300 {open[g.c]
+							class="h-4 w-4 shrink-0 transition-transform duration-300 {(open[g.c] ?? true)
 								? 'rotate-0'
 								: '-rotate-90'}"
 						>
@@ -167,8 +167,7 @@
 							/>
 						</svg>
 					</button>
-					{#if open[g.c]}
-						<p class="mt-3 max-w-2xl text-sm text-ink/60">{sector_info[g.c].i}</p>
+					{#if open[g.c] ?? true}
 						<div
 							transition:slide={{ duration: 300, easing: cubicOut }}
 							class="mt-5 flex flex-col divide-y divide-ink/10 border-y border-ink/10"

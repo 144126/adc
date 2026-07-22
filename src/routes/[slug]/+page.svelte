@@ -51,7 +51,7 @@
 
 	{#if page.url.searchParams.has('submitted')}
 		<div class="mt-6 rounded-lg bg-teal-brand/10 p-4 text-sm text-ink">
-			submitted. your page starts in "{sector_info[p.c]?.n}" with an "in review" badge — the
+			submitted. your page starts in "{p.cn || sector_info[p.c]?.n}" with an "in review" badge — the
 			devcircles team reviews new entries and marks working products as live. edit anytime below.
 		</div>
 	{:else if page.url.searchParams.has('saved')}
@@ -59,7 +59,7 @@
 	{/if}
 
 	<div class="mt-6 flex flex-wrap items-center gap-3">
-		<span class="text-xs tracking-wide text-cobalt uppercase">{sector_info[p.c]?.n}</span>
+		<span class="text-xs tracking-wide text-cobalt uppercase">{p.cn || sector_info[p.c]?.n}</span>
 		<StatusPill r={p.r} />
 		{#if is_owner}
 			<a href="/{p.g}/edit" class="ml-auto text-sm text-cobalt hover:underline">edit your page</a>
